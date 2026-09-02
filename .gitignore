@@ -1,0 +1,5 @@
+.env.local
+.env
+.vercel/
+config.local.js
+__pycache__/

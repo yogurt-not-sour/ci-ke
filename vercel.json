@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/*.py": {
+      "maxDuration": 180
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/scene-image",
+      "destination": "/api/scene_image"
+    },
+    {
+      "source": "/api/scene-b-meta",
+      "destination": "/api/scene_b_meta"
+    }
+  ]
+}
