@@ -10,6 +10,7 @@ import {
 import { generateSceneImageA, generateSceneImageB, isUsingAI } from './imageGen.js';
 import { toggleSceneFlip, playSandDissolve } from './sceneTransition.js';
 import { createVoiceInput, stopVoiceInput } from './voiceInput.js';
+import { getSceneQuestions } from './sceneDetails.js';
 
 const state = {
   emotion: null,
@@ -19,6 +20,7 @@ const state = {
   triggerEvent: '',
   mainWorry: '',
   smallAction: '',
+  sceneDetails: {},
   cardText: '',
   sceneAUrl: null,
   sceneAOriginalUrl: null,
@@ -77,6 +79,7 @@ function goHome() {
     triggerEvent: '',
     mainWorry: '',
     smallAction: '',
+    sceneDetails: {},
     cardText: '',
     sceneAUrl: null,
     sceneAOriginalUrl: null,
@@ -580,6 +583,12 @@ function renderQuestions() {
   q1.addEventListener('input', onInputCheck);
   q2.addEventListener('input', onInputCheck);
   q3.addEventListener('input', onInputCheck);
+  q1.value = state.triggerEvent;
+  q2.value = state.mainWorry;
+  q3.value = state.smallAction;
+  [[q1, 'triggerEvent'], [q2, 'mainWorry'], [q3, 'smallAction']].forEach(([input, key]) => {
+    input.addEventListener('input', () => { state[key] = input.value; });
+  });
 
   const page = el('div', { className: 'page' }, [
     renderParagraphs('你不用说得很完整。\n想到什么，就说一点或写一点。'),
@@ -602,30 +611,67 @@ function renderQuestions() {
       className: 'form-hint',
       innerHTML: '如果现在想不出来，也没关系。<br>你可以写：我现在只想先缓一缓。',
     }),
-    renderBtn('生成此刻卡片', 'btn-primary', () => {
+    renderBtn('再补充一点画面', 'btn-primary', () => {
       if (checkInputCrisis(q1.value) || checkInputCrisis(q2.value) || checkInputCrisis(q3.value)) return;
       state.triggerEvent = q1.value.trim();
       state.mainWorry = q2.value.trim();
       state.smallAction = q3.value.trim();
-      state.cardText = generateCard(state);
-      state.sceneAUrl = null;
-      state.sceneAOriginalUrl = null;
-      state.sceneAPrompt = null;
-      state.sceneBUrl = null;
-      state.sceneBOriginalUrl = null;
-      state.sceneBPrompt = null;
-      state.sceneBMeta = null;
-      state.sceneImageSource = null;
-      state.sceneImageNotice = '';
-      state.sceneImageStatus = 'idle';
-      state.activeScene = 'a';
-      state.sceneBRevealed = false;
-      state.sandPlayed = false;
-      navigate('card');
+      navigate('scene-details');
     }),
   ]);
 
   mainEl.replaceChildren(page);
+}
+
+function renderSceneDetails() {
+  setTitle('让画面更像你的这一刻');
+  showBack(true);
+  const fields = getSceneQuestions(state.triggerEvent).map(question => {
+    const input = el('textarea', {
+      id: `scene-${question.key}`, className: 'form-textarea', rows: '3',
+      maxlength: '300', placeholder: question.placeholder,
+    });
+    input.value = state.sceneDetails[question.key] || '';
+    input.addEventListener('input', () => {
+      if (checkInputCrisis(input.value)) { input.value = ''; return; }
+      state.sceneDetails[question.key] = input.value.slice(0, 300);
+    });
+    return el('div', { className: 'form-group' }, [
+      el('label', { className: 'form-label', for: input.id, textContent: question.label }),
+      input, createVoiceInput(input, question.label),
+    ]);
+  });
+  mainEl.replaceChildren(el('div', { className: 'page' }, [
+    renderParagraphs('还愿意多说一点吗？\n只挑你想说的，也可以直接跳过。'),
+    ...fields,
+    el('div', { className: 'btn-group' }, [
+      renderBtn('生成此刻卡片', 'btn-primary', beginCardGeneration),
+      renderBtn('先不补充，直接生成', 'btn-ghost', () => {
+        state.sceneDetails = {};
+        beginCardGeneration();
+      }),
+    ]),
+  ]));
+}
+
+function beginCardGeneration() {
+  if ([state.triggerEvent, state.mainWorry, state.smallAction, ...Object.values(state.sceneDetails)].some(checkInputCrisis)) return;
+  state.cardText = generateCard(state);
+  state.sceneAUrl = null;
+  state.sceneAOriginalUrl = null;
+  state.sceneAPrompt = null;
+  state.sceneBUrl = null;
+  state.sceneBOriginalUrl = null;
+  state.sceneBPrompt = null;
+  state.sceneBMeta = null;
+  state.sceneImageSource = null;
+  state.sceneImageNotice = '';
+  state.sceneImageStatus = 'idle';
+  state.activeScene = 'a';
+  state.sceneBRevealed = false;
+  state.sandPlayed = false;
+  state.saved = false;
+  navigate('card');
 }
 
 function renderSceneCard() {
@@ -874,6 +920,7 @@ function renderCard() {
             triggerEvent: state.triggerEvent,
             mainWorry: state.mainWorry,
             smallAction: state.smallAction,
+            sceneDetails: { ...state.sceneDetails },
             cardText: state.cardText,
             sceneAUrl: state.sceneAOriginalUrl || state.sceneAUrl,
             sceneAPrompt: state.sceneAPrompt,
@@ -1053,6 +1100,7 @@ const pages = {
   anchoring: renderAnchoring,
   'anxiety-score': renderAnxietyScore,
   questions: renderQuestions,
+  'scene-details': renderSceneDetails,
   card: renderCard,
   stay: renderStay,
   feeling: renderFeeling,

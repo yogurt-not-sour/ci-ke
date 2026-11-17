@@ -30,7 +30,7 @@ class handler(BaseHTTPRequestHandler):
             if not prompt:
                 self.send_json(400, {"error": "prompt 不能为空"})
                 return
-            if len(prompt) > 2000:
+            if len(prompt) > 4000:
                 self.send_json(400, {"error": "prompt 过长"})
                 return
 

@@ -155,6 +155,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 f"最担心：{body.get('mainWorry', '（未填写）')}\n"
                 f"可做的小行动：{body.get('smallAction', '（未填写）')}\n"
                 f"身体状态：{body.get('bodyState', '（未填写）')}\n"
+                f"用户补充的场景细节：{str(body.get('sceneDetails', ''))[:1000]}。请保留这些地点、人物和物件，不将故事替换成无关的抽象风景。\n"
                 f"焦虑强度（0-10）：{body.get('anxietyScore', '（未填写）')}"
             )
             payload = json.dumps(

@@ -5,6 +5,7 @@
  */
 
 import { IMAGE_CONFIG, getApiEndpoint } from './config.js';
+import { describeSceneDetails } from './sceneDetails.js';
 import { generateSceneBMetaLocal, fetchSceneBMeta, buildScenePromptFromMeta } from './sceneBMeta.js';
 
 export { generateSceneBMetaLocal, fetchSceneBMeta, buildScenePromptFromMeta };
@@ -32,6 +33,8 @@ export function buildScenePromptA(data) {
     `人物内心最担心的是：${worry}。`,
     `身体感受：${body}。`,
     `情绪氛围：${intensity}。`,
+    `用户补充的画面：${describeSceneDetails(data.sceneDetails) || '未补充，不臆造真实姓名或外貌'}。`,
+    '以这件真实事件为主体，具体描绘空间布局、人物动作、物件、光线和前中后景，不要只用线团、色块或雾代替故事。',
     '米白暖色调，低饱和，略带压迫感，',
     '象征性场景而非写实照片，无文字，无清晰人脸五官，',
     '安全、克制、呈现「此刻困在焦虑里」的感受。',
@@ -44,7 +47,7 @@ export function buildScenePrompt(data) {
 }
 
 export function buildScenePromptB(data) {
-  return generateSceneBMetaLocal(data).imagePrompt;
+  return buildScenePromptFromMeta(generateSceneBMetaLocal(data), data);
 }
 
 function hashSeed(text) {
@@ -386,7 +389,7 @@ export async function generateSceneImageA(data) {
 
 export async function generateSceneImageB(data) {
   const meta = await fetchSceneBMeta(data);
-  const prompt = buildScenePromptFromMeta(meta);
+  const prompt = buildScenePromptFromMeta(meta, data);
   const result = await generateOneScene(data, prompt, 'b');
   return { ...result, meta };
 }

@@ -4,6 +4,7 @@
  */
 
 import { getApiEndpoint } from './config.js';
+import { describeSceneDetails } from './sceneDetails.js';
 
 export const SCENE_B_SYSTEM_PROMPT = `你是「此刻」App 的场景 B 设计助手。根据用户的事件描述、担心内容和小行动，生成场景 B 的图像描述与含义解释。
 
@@ -209,6 +210,7 @@ export async function fetchSceneBMeta(data) {
         smallAction: data.smallAction,
         bodyState: data.bodyState,
         anxietyScore: data.anxietyScore,
+        sceneDetails: describeSceneDetails(data.sceneDetails),
       }),
       signal: controller.signal,
     });
@@ -230,6 +232,7 @@ function validateMeta(m) {
   }
 }
 
-export function buildScenePromptFromMeta(meta) {
-  return meta.imagePrompt;
+export function buildScenePromptFromMeta(meta, data = {}) {
+  const details = describeSceneDetails(data.sceneDetails);
+  return meta.imagePrompt + (details ? `。保留与图A一致的用户场景细节：${details}。保留地点、人物和关键物件，仅调整视角、人物位置或可行动的空间，不凭空变成无关风景。` : '');
 }

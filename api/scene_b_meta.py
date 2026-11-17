@@ -47,6 +47,7 @@ class handler(BaseHTTPRequestHandler):
                 f"最担心：{limit_text(body.get('mainWorry', '（未填写）'))}\n"
                 f"可做的小行动：{limit_text(body.get('smallAction', '（未填写）'))}\n"
                 f"身体状态：{limit_text(body.get('bodyState', '（未填写）'), 120)}\n"
+                f"用户补充的场景细节：{limit_text(body.get('sceneDetails', ''), 1000)}。请保留这些地点、人物和物件，不将故事替换成无关的抽象风景。\n"
                 f"焦虑强度（0-10）：{body.get('anxietyScore', '（未填写）')}"
             )
             payload = json.dumps(

@@ -65,6 +65,7 @@ const server = http.createServer((req, res) => {
     assert.deepEqual(errors, []);
     await require('./check-voice.cjs')(browser, url, output);
     await require('./check-images.cjs')(browser, url);
+    await require('./check-details.cjs')(browser, url, output);
     console.log('PASS: 3 viewports; welcome/back/reload; 6 themes; anxiety flow; no page errors.');
   } finally {
     if (browser) await browser.close();
