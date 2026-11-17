@@ -28,6 +28,7 @@ const state = {
   sceneBPrompt: null,
   sceneBMeta: null,
   sceneImageSource: null,
+  sceneImageNotice: '',
   sceneImageStatus: 'idle', // idle | loading-a | loading-b | ready-a | ready | error
   activeScene: 'a',
   sceneBRevealed: false,
@@ -85,6 +86,7 @@ function goHome() {
     sceneBPrompt: null,
     sceneBMeta: null,
     sceneImageSource: null,
+    sceneImageNotice: '',
     sceneImageStatus: 'idle',
     activeScene: 'a',
     sceneBRevealed: false,
@@ -614,6 +616,7 @@ function renderQuestions() {
       state.sceneBPrompt = null;
       state.sceneBMeta = null;
       state.sceneImageSource = null;
+      state.sceneImageNotice = '';
       state.sceneImageStatus = 'idle';
       state.activeScene = 'a';
       state.sceneBRevealed = false;
@@ -636,6 +639,9 @@ function renderSceneCard() {
   }));
 
   const status = state.sceneImageStatus;
+  if (state.sceneImageNotice) {
+    card.appendChild(el('p', { className: 'scene-status-hint', role: 'status', textContent: state.sceneImageNotice }));
+  }
 
   if (status === 'error') {
     const wrap = el('div', { className: 'scene-image-wrap scene-error-wrap' });
@@ -655,8 +661,8 @@ function renderSceneCard() {
     const wrap = el('div', { className: 'scene-image-wrap' });
     wrap.appendChild(el('div', { className: 'scene-loading' }, [
       el('div', { className: 'scene-loading-shimmer' }),
-      el('p', { className: 'scene-loading-text', textContent: 'AI 正在描绘图 A（此刻的角度）…' }),
-      el('p', { className: 'scene-loading-sub', textContent: '大约 15–30 秒' }),
+      el('p', { className: 'scene-loading-text', textContent: isUsingAI() ? '正在生成图 A…' : '正在准备本地场景图…' }),
+      el('p', { className: 'scene-loading-sub', textContent: isUsingAI() ? '你可以先看下方的文字卡片' : 'AI 服务尚未连接' }),
     ]));
     card.appendChild(wrap);
     return card;
@@ -797,6 +803,7 @@ async function startSceneGeneration(force = false) {
 
   const token = ++sceneGenToken;
   state.sceneImageStatus = 'loading-a';
+  state.sceneImageNotice = '';
   state.sceneAUrl = null;
   state.sceneBUrl = null;
   state.sceneBRevealed = false;
@@ -813,6 +820,7 @@ async function startSceneGeneration(force = false) {
     state.sceneAOriginalUrl = resultA.originalUrl || resultA.url;
     state.sceneAPrompt = resultA.prompt;
     state.sceneImageSource = resultA.source;
+    state.sceneImageNotice = resultA.fallbackReason || '';
     state.sceneImageStatus = 'ready-a';
 
     if (currentPage() === 'card') renderCard();
@@ -827,6 +835,7 @@ async function startSceneGeneration(force = false) {
     state.sceneBOriginalUrl = resultB.originalUrl || resultB.url;
     state.sceneBPrompt = resultB.prompt;
     state.sceneBMeta = resultB.meta;
+    state.sceneImageNotice = state.sceneImageNotice || resultB.fallbackReason || '';
     state.sceneImageStatus = 'ready';
 
     if (currentPage() === 'card') renderCard();

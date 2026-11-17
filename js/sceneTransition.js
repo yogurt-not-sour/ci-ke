@@ -22,8 +22,18 @@ export function playSandDissolve(container, fromUrl, toUrl, { duration = 2200 } 
     const imgA = new Image();
     const imgB = new Image();
     let loaded = 0;
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(loadTimer);
+      canvas.remove();
+      resolve();
+    };
+    const loadTimer = setTimeout(finish, 6000);
 
     const onLoad = () => {
+      if (settled) return;
       loaded += 1;
       if (loaded < 2) return;
       runDissolve();
@@ -31,17 +41,22 @@ export function playSandDissolve(container, fromUrl, toUrl, { duration = 2200 } 
 
     imgA.onload = onLoad;
     imgB.onload = onLoad;
+    imgA.onerror = finish;
+    imgB.onerror = finish;
     imgA.src = fromUrl;
     imgB.src = toUrl;
 
     function runDissolve() {
+      clearTimeout(loadTimer);
       let imageData;
+      let bgSnapshot;
       try {
         ctx.drawImage(imgA, 0, 0, w, h);
         imageData = ctx.getImageData(0, 0, w, h);
+        ctx.drawImage(imgB, 0, 0, w, h);
+        bgSnapshot = ctx.getImageData(0, 0, w, h);
       } catch {
-        canvas.remove();
-        resolve();
+        finish();
         return;
       }
       const particles = [];
@@ -68,9 +83,6 @@ export function playSandDissolve(container, fromUrl, toUrl, { duration = 2200 } 
         }
       }
 
-      ctx.drawImage(imgB, 0, 0, w, h);
-      const bgSnapshot = ctx.getImageData(0, 0, w, h);
-
       const start = performance.now();
 
       function frame(now) {
@@ -94,8 +106,7 @@ export function playSandDissolve(container, fromUrl, toUrl, { duration = 2200 } 
         if (t < 1) {
           requestAnimationFrame(frame);
         } else {
-          canvas.remove();
-          resolve();
+          finish();
         }
       }
 

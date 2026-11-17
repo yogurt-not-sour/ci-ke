@@ -9,6 +9,7 @@ import os
 import socketserver
 import urllib.error
 import urllib.request
+from urllib.parse import unquote, urlsplit
 from pathlib import Path
 
 PORT = int(os.environ.get("PORT", "8081"))
@@ -49,6 +50,13 @@ SCENE_B_SYSTEM_PROMPT = """你是「此刻」App 的场景 B 设计助手。根�
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
+    def send_head(self):
+        parts = Path(unquote(urlsplit(self.path).path)).parts
+        if any(part.startswith('.') for part in parts) or any(part in {'server.py', 'api', 'scripts'} for part in parts):
+            self.send_error(404)
+            return None
+        return super().send_head()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(DIR), **kwargs)
 
@@ -208,7 +216,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def log_message(self, fmt, *args):
-        if "/api/" in (args[0] if args else ""):
+        if "/api/" in str(args[0] if args else ""):
             super().log_message(fmt, *args)
 
 
@@ -218,5 +226,5 @@ if __name__ == "__main__":
     else:
         print(f"火山方舟已配置 · 生图模型: {IMAGE_MODEL}")
     print(f"预览地址: http://localhost:{PORT}")
-    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+    with http.server.ThreadingHTTPServer(("", PORT), Handler) as httpd:
         httpd.serve_forever()

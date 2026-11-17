@@ -4,7 +4,7 @@
  * - 备用：Canvas 本地生成水彩风格象征场景
  */
 
-import { IMAGE_CONFIG } from './config.js';
+import { IMAGE_CONFIG, getApiEndpoint } from './config.js';
 import { generateSceneBMetaLocal, fetchSceneBMeta, buildScenePromptFromMeta } from './sceneBMeta.js';
 
 export { generateSceneBMetaLocal, fetchSceneBMeta, buildScenePromptFromMeta };
@@ -58,17 +58,22 @@ async function generateViaArk(prompt) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 120000);
   try {
-    const res = await fetch(IMAGE_CONFIG.apiEndpoint, {
+    const res = await fetch(getApiEndpoint(IMAGE_CONFIG.apiEndpoint), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt }),
       signal: controller.signal,
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => { throw new Error('AI 服务没有返回有效结果，请检查后端是否已部署。'); });
     if (!res.ok) {
-      throw new Error(typeof data.error === 'string' ? data.error : 'AI 生图失败');
+      throw new Error(res.status === 500 && String(data.error).includes('ARK_API_KEY')
+        ? 'AI 服务尚未配置密钥，暂时显示本地备用图。'
+        : 'AI 生图服务暂时不可用，暂时显示本地备用图。');
     }
-    // 服务端已返回 base64 data URL，无需跨域预加载
+    if (typeof data.url !== 'string' || !/^(https:\/\/|data:image\/)/.test(data.url)) {
+      throw new Error('AI 服务未返回有效图片，暂时显示本地备用图。');
+    }
+    await loadSceneImage(data.url, { timeoutMs: 20000 });
     return {
       url: data.url,
       originalUrl: data.originalUrl || data.url,
@@ -364,12 +369,14 @@ function renderProceduralSceneB(data, prompt) {
 async function generateOneScene(data, prompt, variant = 'a') {
   try {
     return await generateViaAI(prompt);
-  } catch {
-    await new Promise((r) => setTimeout(r, variant === 'b' ? 800 : 1200));
+  } catch (error) {
     const url = variant === 'b'
       ? renderProceduralSceneB(data, prompt)
       : renderProceduralScene(data, prompt);
-    return { url, originalUrl: url, prompt, source: 'canvas' };
+    const fallbackReason = error.name === 'AbortError'
+      ? 'AI 生图超时，暂时显示本地备用图。'
+      : (error instanceof TypeError ? '无法连接 AI 服务，暂时显示本地备用图。' : error.message);
+    return { url, originalUrl: url, prompt, source: 'canvas', fallbackReason };
   }
 }
 
@@ -389,5 +396,6 @@ export async function generateSceneImage(data) {
 }
 
 export function isUsingAI() {
-  return IMAGE_CONFIG.provider === 'ark';
+  return IMAGE_CONFIG.provider === 'ark'
+    && (Boolean(IMAGE_CONFIG.apiBaseUrl) || !window.location.hostname.endsWith('.github.io'));
 }

@@ -3,6 +3,8 @@
  * 优先走服务端 LLM（/api/scene-b-meta），失败则本地规则生成
  */
 
+import { getApiEndpoint } from './config.js';
+
 export const SCENE_B_SYSTEM_PROMPT = `你是「此刻」App 的场景 B 设计助手。根据用户的事件描述、担心内容和小行动，生成场景 B 的图像描述与含义解释。
 
 场景 B 的目标不是安慰用户，也不是制造光明未来，而是在保留现实压力的基础上，帮助用户换一个更宽、更有行动空间的角度看问题。
@@ -198,7 +200,7 @@ export async function fetchSceneBMeta(data) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 45000);
   try {
-    const res = await fetch('/api/scene-b-meta', {
+    const res = await fetch(getApiEndpoint('/api/scene-b-meta'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

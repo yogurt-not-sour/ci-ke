@@ -24,6 +24,14 @@ ARK_CHAT_ENDPOINT=ep-你的文本接入点
 
 ## Vercel 部署
 
+### GitHub Pages 与 AI 服务
+
+GitHub Pages 仅托管静态前端，不能运行本项目的 Python API。只有 Pages 地址时，页面会直接显示明确标注的本地备用图，不会假装 AI 生图成功。
+
+若前端继续使用 Pages，需要单独部署本项目的 AI 后端，并将 `js/config.js` 中的 `IMAGE_CONFIG.apiBaseUrl` 设置为该后端的公网 HTTPS 地址（不含 `/api` 后缀）。图片和场景 B 文案接口都会使用这个地址；该地址不是 API Key。Key 只配置在后端环境变量中。
+
+本地运行需要 `.env.local`，它已被 Git 忽略且本地预览服务禁止通过 HTTP 读取隐藏文件。恢复本地配置后需要重新启动服务。接口失败、无密钥、图片加载失败时会回退到备用图并显示提示。
+
 1. 把本项目提交到 GitHub。
 2. 打开 <https://vercel.com/>，选择 `Import Git Repository`。
 3. 选择这个仓库并部署。
