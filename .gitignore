@@ -3,3 +3,5 @@
 .vercel/
 config.local.js
 __pycache__/
+.local-qa/
+assets/welcome-meadow-source.png

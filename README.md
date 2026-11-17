@@ -40,6 +40,14 @@ ARK_CHAT_ENDPOINT=ep-你的文本接入点
 
 ## 完整路径
 
+打开先显示自然照片欢迎页，点击「进入此刻」后选择情绪。欢迎页采用用户提供的树与小屋照片，网页资源位于 `assets/welcome-meadow.webp`。
+
+各情绪使用不同的柔和配色：焦虑为鼠尾草绿、难过为浅杏、生气为青绿、亢奋为雾蓝、委屈为柔粉、说不清为淡紫。配色是视觉舒适度设计，不宣称能够治疗或抑制情绪；除焦虑之外的模式仍处于准备中。
+
+设计参考：[Jonauskaite & Mohr 的颜色与情绪系统综述](https://pmc.ncbi.nlm.nih.gov/articles/PMC12325498/)。综述区分了颜色与情绪的联想和颜色对实际情绪体验的影响，后者仍需更多研究。
+
+本地界面验证：安装 Playwright 后运行 `node scripts/check-ui.cjs`，需可用的 Microsoft Edge；也可用环境变量 `PLAYWRIGHT_MODULE` 指向已有 Playwright 模块。截图保存到 `.local-qa/`，不上传到 GitHub。
+
 首页 → 我很焦虑 → 接住用户 → 身体状态 → 安抚练习 → 焦虑评分 → 三个问题 → 此刻卡片（场景图 + 文字）→ 保存 / 再陪一会 / 返回
 
 ## 功能说明

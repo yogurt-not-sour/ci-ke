@@ -165,12 +165,38 @@ function renderHome() {
   setTitle('此刻');
   showBack(false);
 
+  const page = el('section', { className: 'page welcome-page', 'aria-label': '欢迎来到此刻' }, [
+    el('img', {
+      className: 'welcome-landscape',
+      src: 'assets/welcome-meadow.webp',
+      alt: '蓝天下的草地上，一棵枝叶舒展的大树陪着一间红顶小屋',
+      fetchpriority: 'high',
+      decoding: 'async',
+    }),
+    el('div', { className: 'welcome-copy' }, [
+      el('h1', { className: 'welcome-title', textContent: '此刻' }),
+      el('p', { className: 'welcome-greeting', textContent: '嗨，欢迎你来。' }),
+      el('p', { className: 'welcome-message', textContent: '在这棵树下，先歇一会儿。' }),
+    ]),
+    el('div', { className: 'welcome-actions' }, [
+      renderBtn('进入此刻', 'welcome-enter', () => navigate('emotions')),
+      el('p', { className: 'welcome-note', textContent: '带着现在的心情来，就好。' }),
+    ]),
+  ]);
+  mainEl.replaceChildren(page);
+}
+
+function renderEmotions() {
+  setTitle('此刻');
+  showBack(true);
+
   const page = el('div', { className: 'page' }, [
     el('div', { className: 'lead', textContent: '你现在还好吗？' }),
     renderParagraphs('不用急着解释。\n先选一个最接近你的状态。'),
     el('div', { className: 'emotion-grid' }, EMOTIONS.map((emo) =>
       el('button', {
         className: 'emotion-btn',
+        'data-emotion': emo.id,
         textContent: emo.label,
         onClick: () => {
           state.emotion = emo.id;
@@ -998,6 +1024,7 @@ function renderCrisis() {
 
 const pages = {
   home: renderHome,
+  emotions: renderEmotions,
   'coming-soon': renderComingSoon,
   'anxiety-entry': renderAnxietyEntry,
   'body-state': renderBodyState,
@@ -1017,9 +1044,16 @@ const pages = {
 
 function render() {
   const page = currentPage();
+  const theme = ['home', 'emotions', 'crisis'].includes(page) ? 'neutral' : (state.emotion || 'neutral');
+  document.documentElement.dataset.emotion = theme;
+  document.body.classList.toggle('is-welcome', page === 'home');
+  document.getElementById('app-header').hidden = page === 'home';
+  document.querySelector('meta[name="theme-color"]').content =
+    getComputedStyle(document.documentElement).getPropertyValue('--bg-warm').trim();
   const renderer = pages[page];
   if (renderer) renderer();
   else goHome();
+  window.scrollTo(0, 0);
 }
 
 render();
