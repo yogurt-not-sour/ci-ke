@@ -8,15 +8,13 @@
   <meta name="theme-color" content="#F6F9F7">
   <meta name="description" content="此刻，陪你照顾当下的心情。从一片草原、一棵树开始，慢慢回到自己。">
   <title>此刻</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="assets/welcome-meadow-fast.webp" fetchpriority="high">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div id="app" class="app">
     <div class="app-frame">
-      <header class="app-header" id="app-header">
+      <header class="app-header" id="app-header" hidden>
         <button class="back-btn" id="back-btn" aria-label="返回" hidden>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>

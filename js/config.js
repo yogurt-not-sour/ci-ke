@@ -17,3 +17,8 @@ export function getApiEndpoint(path) {
   if (base && !base.startsWith('https://')) throw new Error('AI 服务地址需要使用 HTTPS。');
   return base + path;
 }
+
+export function isAIConfigured() {
+  return IMAGE_CONFIG.provider === 'ark'
+    && (Boolean(IMAGE_CONFIG.apiBaseUrl) || !window.location.hostname.endsWith('.github.io'));
+}

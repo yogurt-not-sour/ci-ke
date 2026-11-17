@@ -25,6 +25,7 @@ const server = http.createServer((req, res) => {
     page.on('pageerror', error => errors.push(error.message));
     await page.route('https://fonts.googleapis.com/**', route => route.abort());
     const url = `http://127.0.0.1:${server.address().port}/`;
+    await require('./check-startup.cjs')(browser, url, output);
     for (const [name, width, height] of [['mobile', 390, 844], ['small', 320, 568], ['desktop', 1440, 900]]) {
       await page.setViewportSize({ width, height });
       await page.goto(url);

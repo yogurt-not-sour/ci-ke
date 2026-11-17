@@ -7,7 +7,7 @@ import {
   saveRecord,
   getRandomReminder,
 } from './data.js';
-import { generateSceneImageA, generateSceneImageB, isUsingAI } from './imageGen.js';
+import { isAIConfigured as isUsingAI } from './config.js';
 import { toggleSceneFlip, playSandDissolve } from './sceneTransition.js';
 import { createVoiceInput, stopVoiceInput } from './voiceInput.js';
 import { getSceneQuestions } from './sceneDetails.js';
@@ -175,7 +175,9 @@ function renderHome() {
   const page = el('section', { className: 'page welcome-page', 'aria-label': '欢迎来到此刻' }, [
     el('img', {
       className: 'welcome-landscape',
-      src: 'assets/welcome-meadow.webp',
+      src: 'assets/welcome-meadow-fast.webp',
+      width: '720',
+      height: '960',
       alt: '蓝天下的草地上，一棵枝叶舒展的大树陪着一间红顶小屋',
       fetchpriority: 'high',
       decoding: 'async',
@@ -191,6 +193,15 @@ function renderHome() {
     ]),
   ]);
   mainEl.replaceChildren(page);
+  const landscape = page.querySelector('.welcome-landscape');
+  // Keep the full image hidden until decoding finishes; slow downloads cannot paint strips.
+  landscape.decode().then(() => {
+    if (landscape.isConnected) landscape.classList.add('is-ready');
+  }).catch(() => {
+    if (!landscape.isConnected) return;
+    landscape.hidden = true;
+    page.querySelector('.welcome-note').textContent = '风景暂时没能加载，你仍可以进入此刻。';
+  });
 }
 
 function renderEmotions() {
@@ -859,6 +870,7 @@ async function startSceneGeneration(force = false) {
   if (currentPage() === 'card') renderCard();
 
   try {
+    const { generateSceneImageA, generateSceneImageB } = await import('./imageGen.js');
     const resultA = await generateSceneImageA(state);
     if (token !== sceneGenToken) return;
 

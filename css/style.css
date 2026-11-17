@@ -18,8 +18,8 @@
   --radius-lg: 24px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --font-serif: 'Noto Serif SC', 'Songti SC', serif;
-  --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  --font-serif: 'Songti SC', 'STSong', 'SimSun', serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -207,13 +207,14 @@ button:focus-visible {
   flex-direction: column;
   align-items: center;
   padding: calc(40px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
-  background: #C8DCC5;
+  background: #528C9B;
   color: #FFFFFF;
   text-align: center;
   animation: none;
 }
 
 .welcome-landscape {
+  opacity: 0;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -221,6 +222,10 @@ button:focus-visible {
   object-fit: cover;
   object-position: center 52%;
   z-index: -1;
+}
+
+.welcome-landscape.is-ready {
+  opacity: 1;
 }
 
 .welcome-copy {
