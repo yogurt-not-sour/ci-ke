@@ -9,6 +9,7 @@ import {
 } from './data.js';
 import { generateSceneImageA, generateSceneImageB, isUsingAI } from './imageGen.js';
 import { toggleSceneFlip, playSandDissolve } from './sceneTransition.js';
+import { createVoiceInput, stopVoiceInput } from './voiceInput.js';
 
 const state = {
   emotion: null,
@@ -107,6 +108,7 @@ function clearTimers() {
 }
 
 function triggerCrisis() {
+  stopVoiceInput();
   clearTimers();
   state.history = ['crisis'];
   render();
@@ -552,16 +554,19 @@ function renderQuestions() {
   showBack(true);
 
   const q1 = el('textarea', {
+    id: 'trigger-event',
     className: 'form-textarea',
     placeholder: '比如：明天要汇报 / 收到一条消息 / 想到未来 / 和别人吵架 / 不知道自己该怎么办',
     rows: '3',
   });
   const q2 = el('textarea', {
+    id: 'main-worry',
     className: 'form-textarea',
     placeholder: '比如：怕自己搞砸 / 怕被否定 / 怕失去关系 / 怕来不及 / 怕事情失控',
     rows: '3',
   });
   const q3 = el('textarea', {
+    id: 'small-action',
     className: 'form-textarea',
     placeholder: '可以很小。比如：喝水 / 洗脸 / 列 3 个重点 / 发一条消息 / 先睡 20 分钟 / 暂时不做决定',
     rows: '3',
@@ -575,18 +580,21 @@ function renderQuestions() {
   q3.addEventListener('input', onInputCheck);
 
   const page = el('div', { className: 'page' }, [
-    renderParagraphs('你不用说得很完整。\n想到什么写什么就好。'),
+    renderParagraphs('你不用说得很完整。\n想到什么，就说一点或写一点。'),
     el('div', { className: 'form-group' }, [
-      el('label', { className: 'form-label', textContent: '刚刚是哪件事把你拽进焦虑里的？' }),
+      el('label', { className: 'form-label', for: 'trigger-event', textContent: '刚刚是哪件事把你拽进焦虑里的？' }),
       q1,
+      createVoiceInput(q1, '刚刚发生的事'),
     ]),
     el('div', { className: 'form-group' }, [
-      el('label', { className: 'form-label', textContent: '这件事里，你最担心发生什么？' }),
+      el('label', { className: 'form-label', for: 'main-worry', textContent: '这件事里，你最担心发生什么？' }),
       q2,
+      createVoiceInput(q2, '最担心的事'),
     ]),
     el('div', { className: 'form-group' }, [
-      el('label', { className: 'form-label', textContent: '现在有没有一件你能做的小事？' }),
+      el('label', { className: 'form-label', for: 'small-action', textContent: '现在有没有一件你能做的小事？' }),
       q3,
+      createVoiceInput(q3, '能做的小事'),
     ]),
     el('p', {
       className: 'form-hint',
@@ -932,6 +940,7 @@ function renderFeeling() {
 
   const input = el('textarea', {
     className: 'form-textarea feeling-area',
+    'aria-label': '现在的感受',
     placeholder: '随便写几个字就好…',
     rows: '4',
   });
@@ -942,6 +951,7 @@ function renderFeeling() {
   const page = el('div', { className: 'page' }, [
     renderParagraphs('不用写得很完整。\n此刻最真实的感受就好。'),
     input,
+    createVoiceInput(input, '现在的感受'),
     renderBtn('写好了', 'btn-primary', () => navigate('stay')),
   ]);
 
@@ -1043,6 +1053,7 @@ const pages = {
 };
 
 function render() {
+  stopVoiceInput();
   const page = currentPage();
   const theme = ['home', 'emotions', 'crisis'].includes(page) ? 'neutral' : (state.emotion || 'neutral');
   document.documentElement.dataset.emotion = theme;

@@ -63,6 +63,7 @@ const server = http.createServer((req, res) => {
     await page.reload();
     assert(await page.locator('.welcome-page').isVisible());
     assert.deepEqual(errors, []);
+    await require('./check-voice.cjs')(browser, url, output);
     console.log('PASS: 3 viewports; welcome/back/reload; 6 themes; anxiety flow; no page errors.');
   } finally {
     if (browser) await browser.close();

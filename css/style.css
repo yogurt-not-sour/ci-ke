@@ -594,6 +594,59 @@ button:focus-visible {
 }
 
 /* Card */
+.voice-input {
+  margin-top: 10px;
+}
+
+.voice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.voice-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--accent-soft);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.voice-button img {
+  flex-shrink: 0;
+}
+
+.voice-button.is-listening {
+  background: var(--tint);
+  border-color: var(--accent);
+}
+
+.voice-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.voice-status,
+.voice-privacy {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.voice-status:empty {
+  display: none;
+}
+
 .moment-card {
   background: var(--surface);
   border-radius: var(--radius-lg);
